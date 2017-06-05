@@ -1,0 +1,3 @@
+[submodule "miniclib"]
+	path = miniclib
+	url = git@github.com:MeshGeometry/miniclib.git
