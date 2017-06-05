@@ -16,10 +16,13 @@ file(GLOB COLOR_SRC
 	)
 
 #include miniclib
-include_directories("./miniclib/*")
+include_directories("./miniclib/Source")
 
 #build this lib
 add_library(codecolor ${COLOR_SRC})
+
+#needs some wrangling to get urho source to work
+add_definitions(-DMINI_URHO -DURHO3D_LOGGING -DURHO3D_IS_BUILDING)
 
 #organize source
 source_group("codecolor" FILES ${COLOR_SRC})
