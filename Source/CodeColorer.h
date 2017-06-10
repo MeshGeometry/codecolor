@@ -14,8 +14,15 @@ URHO3D_API class CodeColorer : public Object
 	URHO3D_OBJECT(CodeColorer, Object);
 
 public:
-	CodeColorer(Context* context, String path);
+	CodeColorer(Context* context);
 	~CodeColorer() {};
 
-	PODVector<unsigned> CreateColors(PODVector<unsigned> code);
+	void ReadAndDecodeFile(String path, PODVector<unsigned>& code);
+	PODVector<unsigned> DecodeToUnicode(String& text);
+	PODVector<unsigned> CreateColors(PODVector<unsigned>& code);
+	void WriteStyleFile(String path, PODVector<unsigned>& styles);
+
+protected:
+
+
 };

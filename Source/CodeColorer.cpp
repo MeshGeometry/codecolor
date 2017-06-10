@@ -1,7 +1,25 @@
 #include "CodeColorer.h"
+#include "IO/FileSystem.h"
+#include "IO/File.h"
 
 namespace
 {
+	char formatTokens_[] = { ' ', '\n', '\t' };
+	char codeTokens_[] = { '#', '<', '>', '"', ':', ';', '(', ')', '/' };
+	char* keywords_[] = {
+		"void",
+		"int",
+		"bool",
+		"float",
+		"vec3",
+		"Vector3",
+		"IntVector2",
+		"varying",
+		"class",
+		"using",
+		"namespace"
+	};
+
 	String tokenStack_;
 	PODVector<unsigned> formatTokens_;// = { ' ', '\n', '\t' };
 	PODVector<unsigned> codeTokens_;// = { '#', '<', '>', '"', ':', ';', '(', ')', '/' };
@@ -23,25 +41,65 @@ namespace
 	PODVector<unsigned> styles_;
 }
 
-CodeColorer::CodeColorer(Context* context, String path) : Object(context)
+CodeColorer::CodeColorer(Context* context) : Object(context)
 {
 
 }
 
-PODVector<unsigned>CodeColorer::CreateColors(PODVector<unsigned> code)
+PODVector<unsigned> CodeColorer::DecodeToUnicode(String& text)
+{
+	PODVector<unsigned> unicodeText_;
+	for (unsigned i = 0; i < text.Length();)
+		unicodeText_.Push(text.NextUTF8Char(i));
+
+	return unicodeText_;
+}
+
+void CodeColorer::ReadAndDecodeFile(String path, PODVector<unsigned>& code)
+{
+	FileSystem* fs = GetSubsystem<FileSystem>();
+	code.Clear();
+	if (fs->FileExists(path))
+	{
+		File* file = new File(GetContext(), path, FILE_READ);
+		while (!file->IsEof())
+		{
+			String line = file->ReadLine();
+			line += "\n";
+			code.Push(DecodeToUnicode(line));
+		}
+	}
+}
+
+void CodeColorer::WriteStyleFile(String path, PODVector<unsigned>& styles)
+{
+	File* file = new File(GetContext(), path, FILE_WRITE);
+	int counter = 0;
+	String line = "";
+	while (counter < styles.Size())
+	{
+		char c = styles[counter];
+		if (c != '\n')
+		{
+			line.AppendUTF8(c);
+		}
+		else
+		{
+			file->WriteLine(line);
+			line = "";
+		}
+
+		counter++;
+	}
+
+	file->Close();
+}
+
+PODVector<unsigned> CodeColorer::CreateColors(PODVector<unsigned>& code)
 {
 	//a parallel list of what style each char is.
 	PODVector<unsigned> styleMap_;
-	
-	if(styles_.Empty())
-	{
-		//no styles, no service
-		return styleMap_;
-	}
 
-	//apply styles
-	styleMap_.Clear();
-	int numStyles = styles_.Size();
 
 	//loop through text and update
 	int counter = 0;
@@ -71,11 +129,8 @@ PODVector<unsigned>CodeColorer::CreateColors(PODVector<unsigned> code)
 		}
 
 		//push default style to stack and adjust later
-		if (c != '\n')
-		{
-			styleMap_.Push(0);
-			counter++;
-		}
+		styleMap_.Push(c);
+		counter++;
 
 		//keywords can be colored directly
 		if (keywords_.Contains(word))
@@ -84,18 +139,18 @@ PODVector<unsigned>CodeColorer::CreateColors(PODVector<unsigned> code)
 			for (int j = wordLength; j > 0; j--)
 			{
 				int index = Max(0, counter - j);
-				styleMap_[index] = 4; //TODO: look up different styles for different keywords
+				styleMap_[index] = 'K'; //TODO: look up different styles for different keywords
 			}
 		}
 
 		//apply #
 		if (tokenStack_.Front() == '#')
 		{
-			styleMap_[counter - 1] = 2;
+			styleMap_[counter - 1] = 'I';
 
 			if (tokenStack_.Contains('\"') || tokenStack_.Contains('<'))
 			{
-				styleMap_[counter - 1] = 3;
+				styleMap_[counter - 1] = 'P';
 			}
 
 			continue;
@@ -104,7 +159,7 @@ PODVector<unsigned>CodeColorer::CreateColors(PODVector<unsigned> code)
 		//apply "
 		if (tokenStack_.Contains('\"'))
 		{
-			styleMap_[counter - 1] = 3;
+			styleMap_[counter - 1] = 'S';
 			int first = tokenStack_.Find('\"');
 			int last = tokenStack_.FindLast('\"');
 			if (first != last)
@@ -117,15 +172,15 @@ PODVector<unsigned>CodeColorer::CreateColors(PODVector<unsigned> code)
 		//apply '//'
 		if (tokenStack_.Contains("//"))
 		{
-			styleMap_[counter - 1] = 1;
+			styleMap_[counter - 1] = 'C';
 			if (tokenStack_.EndsWith("//"))
 			{
-				styleMap_[counter - 2] = 1;
+				styleMap_[counter - 2] = 'C';
 			}
 		}
-
-
-		//return
-		return styleMap_;
 	}
+
+
+	//return
+	return styleMap_;
 }

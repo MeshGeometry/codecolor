@@ -28,7 +28,10 @@ add_definitions(-DMINI_URHO -DURHO3D_LOGGING -DURHO3D_IS_BUILDING)
 source_group("codecolor" FILES ${COLOR_SRC})
 
 #add the test material
-target_sources(minitests PUBLIC "../../Source/Test_CodeColor.cpp")
+target_sources(minitests PUBLIC 
+	"../../Source/Test_CodeColor.cpp"
+	"../../Source/CodeColorer.cpp"
+	)
 
 
 
