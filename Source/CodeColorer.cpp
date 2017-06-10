@@ -1,12 +1,13 @@
 #include "CodeColorer.h"
 #include "IO/FileSystem.h"
 #include "IO/File.h"
+#include "Core/StringUtils.h"
 
 namespace
 {
-	char formatTokens_[] = { ' ', '\n', '\t' };
-	char codeTokens_[] = { '#', '<', '>', '"', ':', ';', '(', ')', '/' };
-	char* keywords_[] = {
+	const char* formatTokens_[] = { " ", "\n", "\t"};
+	const char* codeTokens_[] = { "#", "<", ">", "\"", ":", ";", "(", ")"};
+	const char* keywords_[] = {
 		"void",
 		"int",
 		"bool",
@@ -19,26 +20,6 @@ namespace
 		"using",
 		"namespace"
 	};
-
-	String tokenStack_;
-	PODVector<unsigned> formatTokens_;// = { ' ', '\n', '\t' };
-	PODVector<unsigned> codeTokens_;// = { '#', '<', '>', '"', ':', ';', '(', ')', '/' };
-	Vector<String> keywords_;/* = {
-		"void",
-		"int",
-		"bool",
-		"float",
-		"vec3",
-		"Vector3",
-		"IntVector2",
-		"varying",
-		"class",
-		"using",
-		"namespace"
-	};
-	*/
-
-	PODVector<unsigned> styles_;
 }
 
 CodeColorer::CodeColorer(Context* context) : Object(context)
@@ -100,17 +81,19 @@ PODVector<unsigned> CodeColorer::CreateColors(PODVector<unsigned>& code)
 	//a parallel list of what style each char is.
 	PODVector<unsigned> styleMap_;
 
+	//hoops
+
 
 	//loop through text and update
 	int counter = 0;
 	String word;
-	tokenStack_ = "";
+	String tokenStack_ = "";
 	for (unsigned i = 0; i < code.Size(); i++)
 	{
-		char c = code[i];
+		const char c = code[i];
 
 		//update word and token state
-		if (formatTokens_.Contains(c))
+		if (GetStringListIndex(&c, formatTokens_, 1000, false) != 1000)
 		{
 			word = "";
 			if (c == '\n')
@@ -118,7 +101,7 @@ PODVector<unsigned> CodeColorer::CreateColors(PODVector<unsigned>& code)
 				tokenStack_ = "";
 			}
 		}
-		else if (codeTokens_.Contains(c))
+		else if (GetStringListIndex(&c, codeTokens_, 1000, false) != 1000)
 		{
 			word = "";
 			tokenStack_.AppendUTF8(c);
@@ -133,7 +116,7 @@ PODVector<unsigned> CodeColorer::CreateColors(PODVector<unsigned>& code)
 		counter++;
 
 		//keywords can be colored directly
-		if (keywords_.Contains(word))
+		if (GetStringListIndex(word.CString(), keywords_, 1000, false) != 1000)
 		{
 			int wordLength = word.LengthUTF8();
 			for (int j = wordLength; j > 0; j--)
