@@ -7,6 +7,9 @@
 
 #include "CodeColorer.h"
 
+#include  <regex>
+#include <string>
+
 using namespace Urho3D;
 
 Context* ctx;
@@ -37,5 +40,23 @@ TEST(Base, FileParse)
 
 	String out = "../../../CodeColorerStyle.txt";
 	cc->WriteStyleFile(out, styles);
+
+}
+
+TEST(Base, firstRegex)
+{
+	String codeLine = "#include \"Test.h\"";
+
+	const char* c = codeLine.CString();
+	std::cmatch m;
+	//std::regex e("\\b(sub)([^ ]*)");   // matches words beginning by "sub"
+	//std::regex e("\\#(\\w+)");
+	std::regex e("\\#(\\w+)\\s\\K\"(.*?)\"");
+
+	while (std::regex_search(c, m, e)) {
+		for (auto x : m) std::cout << x << " ";
+		std::cout << std::endl;
+		c = m.suffix().first;
+	}
 
 }
