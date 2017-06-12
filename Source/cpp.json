@@ -1,0 +1,19 @@
+{
+	"rules": [
+		{
+			"name" : "preprocessor",
+			"regex" : "\\#(\\w+)",
+			"color" : "#7f8c8d"
+		},
+		{
+			"name" : "literal",
+			"regex" : "\\#(\\w+)",
+			"color" : "#e67e22"
+		},
+		{
+			"name" : "comment",
+			"regex" : "\\#(\\w+)",
+			"color" : "#7f8c8d"
+		},
+	]
+}

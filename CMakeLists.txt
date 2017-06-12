@@ -17,6 +17,7 @@ file(GLOB COLOR_SRC
 
 #include miniclib
 include_directories("./miniclib/Source")
+include_directories("./rapidjson/include")
 
 #build this lib
 add_library(codecolor ${COLOR_SRC})
@@ -29,9 +30,16 @@ source_group("codecolor" FILES ${COLOR_SRC})
 
 #add the test material
 target_sources(minitests PUBLIC 
-	"../../Source/Test_CodeColor.cpp"
+	"../../Test/Test_CodeColor.cpp"
 	"../../Source/CodeColorer.cpp"
+	"../../Source/JSONFile.cpp"
+	"../../Source/JSONValue.cpp"
 	)
 
+#link some more includes
+target_include_directories(minitests PUBLIC
+	"./Source"
+	"./rapidjson/include"
+	)
 
 
