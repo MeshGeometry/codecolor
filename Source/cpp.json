@@ -4,16 +4,6 @@
 			"name" : "preprocessor",
 			"regex" : "\\#(\\w+)",
 			"color" : "0.8 0.8 0.8 1"
-		},
-		{
-			"name" : "literal",
-			"regex" : "\\#(\\w+)",
-			"color" : "1 1 0 1"
-		},
-		{
-			"name" : "comment",
-			"regex" : "\\#(\\w+)",
-			"color" : "0.8 0.8 0.8 1"
 		}
 	]
 }
