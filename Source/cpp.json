@@ -4,6 +4,21 @@
 			"name" : "preprocessor",
 			"regex" : "\\#(\\w+)",
 			"color" : "0.8 0.8 0.8 1"
+		},
+		{
+			"name" : "literal",
+			"regex" : "\"(.*?)\"",
+			"color" : "0.8 0.8 0.0 1"
+		},
+		{
+			"name" : "keyword",
+			"regex" : "\\b(void|return|int|unsigned|float|bool|virtual|class|namespace|using)",
+			"color" : "0.2 0.2 0.8 1"
+		},
+		{
+			"name" : "comment",
+			"regex" : "//(.*)",
+			"color" : "0.8 0.8 0.8 1"
 		}
 	]
 }

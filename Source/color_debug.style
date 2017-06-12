@@ -1,0 +1,70 @@
+PPPPPPPP LLLLLLLLLLLLLLL
+PPPPPPPP LLLLLLLLLLLLLLLLL
+PPPPPPPP LLLLLLLLLLL
+PPPPPPPP LLLLLLLLLLLLLLLLLLLL
+
+CodeColorer::CodeColorer(Context* context) : Object(context)
+{
+
+}
+
+PODVector<KKKKKKKK> CodeColorer::DecodeToUnicode(String& text)
+{
+	PODVector<KKKKKKKK> unicodeText_;
+	for (KKKKKKKK i = 0; i < text.Length();)
+		unicodeText_.Push(text.NextUTF8Char(i));
+
+	KKKKKK unicodeText_;
+}
+
+KKKK CodeColorer::ReadAndDecodeFile(String path, PODVector<KKKKKKKK>& code)
+{
+	FileSystem* fs = GetSubsystem<FileSystem>();
+	code.Clear();
+	if (fs->FileExists(path))
+	{
+		File* file = new File(GetContext(), path, FILE_READ);
+
+		CCCCCCCCCCCCCCCCCCCCCCCCC
+		code.Resize(file->GetSize());
+		file->Read(&code[0], code.Size());
+
+		file->Close();
+	}
+}
+
+KKKK CodeColorer::WriteStyleFile(String path, PODVector<KKKKKKKK>& styles)
+{
+	File* file = new File(GetContext(), path, FILE_WRITE);
+	KKK counter = 0;
+	String line = LL;
+	while (counter < styles.Size())
+	{
+		char c = styles[counter];
+		if (c != '\n')
+		{
+			line.AppendUTF8(c);
+		}
+		else
+		{
+			file->WriteLine(line);
+			line = LL;
+		}
+
+		counter++;
+	}
+
+	file->Close();
+}
+
+PODVector<KKKKKKKK> CodeColorer::CreateColors(PODVector<KKKKKKKK>& code)
+{
+	CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+	PODVector<KKKKKKKK> styleMap_;
+
+	
+
+
+	CCCCCCCC
+	KKKKKK styleMap_;
+}

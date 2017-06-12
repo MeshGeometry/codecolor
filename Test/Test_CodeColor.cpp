@@ -298,7 +298,7 @@ TEST(Base, BetterParse)
 	}
 
 	//dump style map to file
-	String outPath = "../../../Source/color_debug.cpp";
+	String outPath = "../../../Source/color_debug.style";
 	File* out = new File(ctx, outPath, FILE_WRITE);
 	out->Write(&styleMap[0], styleMap.Size());
 	out->Close();
