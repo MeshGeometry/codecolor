@@ -11,6 +11,7 @@
 #include "CodeColorer.h"
 
 #include  <regex>
+#include <boost/regex.hpp>
 #include <string>
 
 using namespace Urho3D;
