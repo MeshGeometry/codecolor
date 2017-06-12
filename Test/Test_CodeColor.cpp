@@ -4,6 +4,9 @@
 #include "Core/Object.h"
 #include "IO/File.h"
 #include "IO/FileSystem.h"
+#include "Core/StringUtils.h"
+
+#include "JSONFile.h"
 
 #include "CodeColorer.h"
 
@@ -57,6 +60,49 @@ TEST(Base, firstRegex)
 		for (auto x : m) std::cout << x << " ";
 		std::cout << std::endl;
 		c = m.suffix().first;
+	}
+
+}
+
+TEST(Base, loadRegex)
+{
+	if (!ctx) {
+		Init();
+	}
+
+	bool res = fs->FileExists("../../../Source/cpp.json");
+
+	File* jSource = new File(ctx, "../../../Source/cpp.json", FILE_READ);
+	JSONFile* jFile= new JSONFile(ctx);
+	res = jFile->Load(*jSource);
+
+	EXPECT_TRUE(res);
+
+	File* source = new File(ctx, "../../../Source/CodeColorer.cpp", FILE_READ);
+
+	EXPECT_TRUE(jFile != NULL);
+	EXPECT_TRUE(source != NULL);
+
+	//get the source as chars
+	PODVector<unsigned char> buffer;
+	buffer.Resize(source->GetSize());
+	source->Read(&buffer[0], buffer.Size());
+
+	//get the first regex
+	const JSONValue& root = jFile->GetRoot();
+
+	String test = root.Get("hello").GetString();
+
+	const JSONValue& rVal = root.Get("rules");
+	const JSONArray& rulesArr = rVal.GetArray();
+
+	for (int i = 0; i < rulesArr.Size(); i++)
+	{
+		JSONValue currRule = rulesArr[i];
+		String name = currRule["name"].GetString();
+		String regex = currRule["regex"].GetString();
+		Color color = ToColor(currRule["color"].GetString());
+
 	}
 
 }
