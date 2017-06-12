@@ -19,6 +19,22 @@ Context* ctx;
 FileSystem* fs;
 CodeColorer* cc;
 
+struct Token
+{
+	String name_;
+	String regex_;
+	Color color_;
+
+	Token::Token() {};
+	Token::Token(String name, String regex, Color col):
+		name_(name),
+		regex_(regex),
+		color_(col)
+	{
+		
+	}
+};
+
 void Init()
 {
 	ctx = new Context();
@@ -84,17 +100,19 @@ TEST(Base, loadRegex)
 	EXPECT_TRUE(source != NULL);
 
 	//get the source as chars
-	PODVector<unsigned char> buffer;
+	PODVector<char> buffer;
 	buffer.Resize(source->GetSize());
 	source->Read(&buffer[0], buffer.Size());
 
-	//get the first regex
+	//get tokens from the rule list
 	const JSONValue& root = jFile->GetRoot();
 
 	String test = root.Get("hello").GetString();
 
 	const JSONValue& rVal = root.Get("rules");
 	const JSONArray& rulesArr = rVal.GetArray();
+
+	Vector<Token> tokens;
 
 	for (int i = 0; i < rulesArr.Size(); i++)
 	{
@@ -103,6 +121,29 @@ TEST(Base, loadRegex)
 		String regex = currRule["regex"].GetString();
 		Color color = ToColor(currRule["color"].GetString());
 
+		Token t(name, regex, color);
+
+		tokens.Push(t);
+
+	}
+
+	jSource->Close();
+
+	//now iterate over the tokens and match the regex
+	Token t = tokens[0];
+
+	//not sure if a conversion needs to happen here
+	//String rawCodeString;
+	//BufferToString(rawCodeString, &buffer[0], buffer.Size());
+	const char* rawCode = &buffer[0];
+	std::cmatch m;
+	const char* eChars = t.regex_.CString();
+	std::regex e(eChars);
+
+	while (std::regex_search(rawCode, m, e)) {
+		for (auto x : m) std::cout << x << " ";
+		std::cout << std::endl;
+		rawCode = m.suffix().first;
 	}
 
 }
