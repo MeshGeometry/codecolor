@@ -1,6 +1,3 @@
 [submodule "miniclib"]
 	path = miniclib
 	url = git@github.com:MeshGeometry/miniclib.git
-[submodule "regex"]
-	path = regex
-	url = git@github.com:boostorg/regex.git
