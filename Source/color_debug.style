@@ -11,7 +11,7 @@ CodeColorer::CodeColorer(Context* context) : Object(context)
 PODVector<KKKKKKKK> CodeColorer::DecodeToUnicode(String& text)
 {
 	PODVector<KKKKKKKK> unicodeText_;
-	for (KKKKKKKK i = 0; i < text.Length();)
+	FFF (KKKKKKKK i = 0; i < text.Length();)
 		unicodeText_.Push(text.NextUTF8Char(i));
 
 	KKKKKK unicodeText_;
@@ -21,7 +21,7 @@ KKKK CodeColorer::ReadAndDecodeFile(String path, PODVector<KKKKKKKK>& code)
 {
 	FileSystem* fs = GetSubsystem<FileSystem>();
 	code.Clear();
-	if (fs->FileExists(path))
+	FF (fs->FileExists(path))
 	{
 		File* file = new File(GetContext(), path, FILE_READ);
 
@@ -38,14 +38,14 @@ KKKK CodeColorer::WriteStyleFile(String path, PODVector<KKKKKKKK>& styles)
 	File* file = new File(GetContext(), path, FILE_WRITE);
 	KKK counter = 0;
 	String line = LL;
-	while (counter < styles.Size())
+	FFFFF (counter < styles.Size())
 	{
 		char c = styles[counter];
-		if (c != '\n')
+		FF (c != '\n')
 		{
 			line.AppendUTF8(c);
 		}
-		else
+		FFFF
 		{
 			file->WriteLine(line);
 			line = LL;

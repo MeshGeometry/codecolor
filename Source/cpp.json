@@ -16,6 +16,11 @@
 			"color" : "0.2 0.2 0.8 1"
 		},
 		{
+			"name" : "flow",
+			"regex" : "\\b(for|while|if|else)",
+			"color" : "0.9 0.2 0.2 1"
+		},
+		{
 			"name" : "comment",
 			"regex" : "//(.*)",
 			"color" : "0.8 0.8 0.8 1"
