@@ -3,68 +3,145 @@
 #include "IO/File.h"
 #include "Core/StringUtils.h"
 
+#include "JSONFile.h"
+
+#include <regex>
+
 CodeColorer::CodeColorer(Context* context) : Object(context)
 {
+	//default colors
+	Color light(0.8f, 0.8f, 0.8f);
+	Color blue(0.2f, 0.2f, 0.8f);
+	Color red(0.9f, 0.2f, 0.2f);
+	Color yellow(0.8f, 0.8f, 0.0f);
+	Color green(0.2f, 0.8f, 0.2f);
+	Color dark(0.3f, 0.3f, 0.3f);
+	
+	//create default rules (for cpp)
+	ColorRule p("preprocessor", "\\#(\\w+)", dark);
+	ColorRule l("literal", "\"(.*?)\"", yellow);
+	ColorRule k("keyword", "\\b(void|return|int|unsigned|float|bool|virtual|class|namespace|using)", blue);
+	ColorRule r("flow", "\\b(for|while|if|else)", red);
+	ColorRule m("member", "([\\w]+)::([\\w]+)", green);
+	ColorRule c("comment", "//(.*)", dark);
 
+	//push
+	colorRules_.Push(p);
+	colorRules_.Push(l);
+	colorRules_.Push(k);
+	colorRules_.Push(r);
+	colorRules_.Push(m);
+	colorRules_.Push(c);
 }
 
-PODVector<unsigned> CodeColorer::DecodeToUnicode(String& text)
+bool CodeColorer::GetRulesFromFile(String path)
 {
-	PODVector<unsigned> unicodeText_;
-	for (unsigned i = 0; i < text.Length();)
-		unicodeText_.Push(text.NextUTF8Char(i));
+	File* jSource = new File(GetContext(), path, FILE_READ);
+	JSONFile* jFile = new JSONFile(GetContext());
 
-	return unicodeText_;
-}
+	bool res = jFile->Load(*jSource);
 
-void CodeColorer::ReadAndDecodeFile(String path, PODVector<unsigned>& code)
-{
-	FileSystem* fs = GetSubsystem<FileSystem>();
-	code.Clear();
-	if (fs->FileExists(path))
+	if (!res)
 	{
-		File* file = new File(GetContext(), path, FILE_READ);
+		return res;
+	}
 
-		//get the source as chars
-		code.Resize(file->GetSize());
-		file->Read(&code[0], code.Size());
+	//get tokens from the rule list
+	const JSONValue& root = jFile->GetRoot();
+	const JSONValue& rVal = root.Get("rules");
+	const JSONArray& rulesArr = rVal.GetArray();
 
-		file->Close();
+
+	//clear the rules
+	colorRules_.Clear();
+
+	//loop through rules and fill vector
+	for (int i = 0; i < rulesArr.Size(); i++)
+	{
+		JSONValue currRule = rulesArr[i];
+		String name = currRule["name"].GetString();
+		String regex = currRule["regex"].GetString();
+		Color color = ToColor(currRule["color"].GetString());
+
+		ColorRule cr(name, regex, color);
+
+		colorRules_.Push(cr);
+
+	}
+
+	//close up
+	jSource->Close();
+
+
+	return res;
+}
+
+
+void CodeColorer::ApplyColorRule(ColorRule rule, const PODVector<char>& rawCode, PODVector<char>& styleMap)
+{
+	//define regex stuff
+	std::cmatch m;
+	std::regex e(rule.regex_.CString());
+
+	//var name
+	char v = rule.name_.ToUpper().At(0);
+
+	//get pointer into raw code
+	const char* c = &rawCode[0];
+
+	//perform the regex
+	int startCounter = 0;
+	while (std::regex_search(c, m, e)) {
+
+		//remap the start/end from local to original positions
+		int start = m.position() + startCounter;
+		int end = start + m.length();
+
+		//apply to styleMap
+		for (int i = start; i < end; i++)
+		{
+			styleMap[i] = v;
+		}
+
+		//iterate
+		c = m.suffix().first;
+		startCounter = end;
 	}
 }
 
-void CodeColorer::WriteStyleFile(String path, PODVector<unsigned>& styles)
-{
-	File* file = new File(GetContext(), path, FILE_WRITE);
-	int counter = 0;
-	String line = "";
-	while (counter < styles.Size())
-	{
-		char c = styles[counter];
-		if (c != '\n')
-		{
-			line.AppendUTF8(c);
-		}
-		else
-		{
-			file->WriteLine(line);
-			line = "";
-		}
-
-		counter++;
-	}
-
-	file->Close();
-}
-
-PODVector<unsigned> CodeColorer::CreateColors(PODVector<unsigned>& code)
+PODVector<char> CodeColorer::CreateColors(PODVector<char>& code)
 {
 	//a parallel list of what style each char is.
-	PODVector<unsigned> styleMap_;
-
+	PODVector<char> styleMap;
+	styleMap.Insert(0, code);
 	
-
+	//loop through styles and apply
+	for (int i = 0; i < colorRules_.Size(); i++)
+	{
+		ColorRule r = colorRules_[i];
+		ApplyColorRule(r, code, styleMap);
+	}
 
 	//return
-	return styleMap_;
+	return styleMap;
+}
+
+bool CodeColorer::CreateColors(String path, PODVector<char>& code, PODVector<char>& styles)
+{
+	FileSystem* fs = GetSubsystem<FileSystem>();
+	if (!fs->FileExists(path))
+	{
+		return false;
+	}
+
+	//dump file in to char vector
+	PODVector<char> rawCode;
+	File* source = new File(GetContext(), path, FILE_READ);
+	rawCode.Resize(source->GetSize());
+	source->Read(&rawCode[0], rawCode.Size());
+
+	//create the colors
+	styles = CreateColors(rawCode);
+
+	return true;
 }

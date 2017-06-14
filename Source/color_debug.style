@@ -3,68 +3,145 @@ PPPPPPPP LLLLLLLLLLLLLLLLL
 PPPPPPPP LLLLLLLLLLL
 PPPPPPPP LLLLLLLLLLLLLLLLLLLL
 
+PPPPPPPP LLLLLLLLLLLL
+
+PPPPPPPP <regex>
+
 MMMMMMMMMMMMMMMMMMMMMMMM(Context* context) : Object(context)
 {
+	CCCCCCCCCCCCCCCC
+	Color light(0.8f, 0.8f, 0.8f);
+	Color blue(0.2f, 0.2f, 0.8f);
+	Color red(0.9f, 0.2f, 0.2f);
+	Color yellow(0.8f, 0.8f, 0.0f);
+	Color green(0.2f, 0.8f, 0.2f);
+	Color dark(0.3f, 0.3f, 0.3f);
+	
+	CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+	ColorRule p(LLLLLLLLLLLLLL, LLLLLLLLLLL, dark);
+	ColorRule l(LLLLLLLLL, LLL(.*?)\LL, yellow);
+	ColorRule k(LLLLLLLLL, LLLLLKKKKLKKKKKKLKKKLKKKKKKKKLKKKKKLKKKKLKKKKKKKLKKKKKLKKKKKKKKKLKKKKKLL, blue);
+	ColorRule r(LLLLLL, LLLLLFFFLFFFFFLFFLFFFFLL, red);
+	ColorRule m(LLLLLLLL, LLLLLLLLLLLLLLLLLLLL, green);
+	ColorRule c(LLLLLLLLL, LCCCCCCCCCCCCCCC
 
+	CCCCCC
+	colorRules_.Push(p);
+	colorRules_.Push(l);
+	colorRules_.Push(k);
+	colorRules_.Push(r);
+	colorRules_.Push(m);
+	colorRules_.Push(c);
 }
 
-PODVector<KKKKKKKK> MMMMMMMMMMMMMMMMMMMMMMMMMMMM(String& text)
+KKKK MMMMMMMMMMMMMMMMMMMMMMMMMMMMM(String path)
 {
-	PODVector<KKKKKKKK> unicodeText_;
-	FFF (KKKKKKKK i = 0; i < text.Length();)
-		unicodeText_.Push(text.NextUTF8Char(i));
+	File* jSource = new File(GetContext(), path, FILE_READ);
+	JSONFile* jFile = new JSONFile(GetContext());
 
-	KKKKKK unicodeText_;
-}
+	KKKK res = jFile->Load(*jSource);
 
-KKKK MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM(String path, PODVector<KKKKKKKK>& code)
-{
-	FileSystem* fs = GetSubsystem<FileSystem>();
-	code.Clear();
-	FF (fs->FileExists(path))
+	FF (!res)
 	{
-		File* file = new File(GetContext(), path, FILE_READ);
+		KKKKKK res;
+	}
 
-		CCCCCCCCCCCCCCCCCCCCCCCCC
-		code.Resize(file->GetSize());
-		file->Read(&code[0], code.Size());
+	CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+	const JSONValue& root = jFile->GetRoot();
+	const JSONValue& rVal = root.Get(LLLLLLL);
+	const JSONArray& rulesArr = rVal.GetArray();
 
-		file->Close();
+
+	CCCCCCCCCCCCCCCCC
+	colorRules_.Clear();
+
+	CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+	FFF (KKK i = 0; i < rulesArr.Size(); i++)
+	{
+		JSONValue currRule = rulesArr[i];
+		String name = currRule[LLLLLL].GetString();
+		String regex = currRule[LLLLLLL].GetString();
+		Color color = ToColor(currRule[LLLLLLL].GetString());
+
+		ColorRule cr(name, regex, color);
+
+		colorRules_.Push(cr);
+
+	}
+
+	CCCCCCCCCC
+	jSource->Close();
+
+
+	KKKKKK res;
+}
+
+
+KKKK MMMMMMMMMMMMMMMMMMMMMMMMMMM(ColorRule rule, const PODVector<char>& rawCode, PODVector<char>& styleMap)
+{
+	CCCCCCCCCCCCCCCCCCCC
+	MMMMMMMMMMM m;
+	MMMMMMMMMM e(rule.regex_.CString());
+
+	CCCCCCCCCC
+	char v = rule.name_.ToUpper().At(0);
+
+	CCCCCCCCCCCCCCCCCCCCCCCCCCC
+	const char* c = &rawCode[0];
+
+	CCCCCCCCCCCCCCCCCCC
+	KKK startCounter = 0;
+	FFFFF (MMMMMMMMMMMMMMMMM(c, m, e)) {
+
+		CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+		KKK start = m.position() + startCounter;
+		KKK end = start + m.length();
+
+		CCCCCCCCCCCCCCCCCCC
+		FFF (KKK i = start; i < end; i++)
+		{
+			styleMap[i] = v;
+		}
+
+		CCCCCCCCC
+		c = m.suffix().first;
+		startCounter = end;
 	}
 }
 
-KKKK MMMMMMMMMMMMMMMMMMMMMMMMMMM(String path, PODVector<KKKKKKKK>& styles)
-{
-	File* file = new File(GetContext(), path, FILE_WRITE);
-	KKK counter = 0;
-	String line = LL;
-	FFFFF (counter < styles.Size())
-	{
-		char c = styles[counter];
-		FF (c != '\n')
-		{
-			line.AppendUTF8(c);
-		}
-		FFFF
-		{
-			file->WriteLine(line);
-			line = LL;
-		}
-
-		counter++;
-	}
-
-	file->Close();
-}
-
-PODVector<KKKKKKKK> MMMMMMMMMMMMMMMMMMMMMMMMM(PODVector<KKKKKKKK>& code)
+PODVector<char> MMMMMMMMMMMMMMMMMMMMMMMMM(PODVector<char>& code)
 {
 	CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-	PODVector<KKKKKKKK> styleMap_;
-
+	PODVector<char> styleMap;
+	styleMap.Insert(0, code);
 	
-
+	CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+	FFF (KKK i = 0; i < colorRules_.Size(); i++)
+	{
+		ColorRule r = colorRules_[i];
+		ApplyColorRule(r, code, styleMap);
+	}
 
 	CCCCCCCC
-	KKKKKK styleMap_;
+	KKKKKK styleMap;
+}
+
+KKKK MMMMMMMMMMMMMMMMMMMMMMMMM(String path, PODVector<char>& code, PODVector<char>& styles)
+{
+	FileSystem* fs = GetSubsystem<FileSystem>();
+	FF (!fs->FileExists(path))
+	{
+		KKKKKK false;
+	}
+
+	CCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+	PODVector<char> rawCode;
+	File* source = new File(GetContext(), path, FILE_READ);
+	rawCode.Resize(source->GetSize());
+	source->Read(&rawCode[0], rawCode.Size());
+
+	CCCCCCCCCCCCCCCCCCC
+	styles = CreateColors(rawCode);
+
+	KKKKKK true;
 }
